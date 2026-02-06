@@ -65,10 +65,7 @@ button{
 }
 button:hover{transform:scale(1.05)}
 
-.options button{
-  width:100%;
-  margin:10px 0;
-}
+.options button{width:100%;margin:10px 0}
 
 /* Kiss animation */
 .kiss-wrap{height:70px;position:relative}
@@ -86,7 +83,7 @@ button:hover{transform:scale(1.05)}
   100%{opacity:0}
 }
 
-/* Heart particles */
+/* Heart effects */
 .heart-particle{
   position:fixed;
   font-size:14px;
@@ -128,13 +125,13 @@ for(let i=0;i<18;i++){
 
 <div id="app" class="card"></div>
 
-<audio id="song" src="valentine.mp3"></audio>
+<!-- Music (ONLY plays on YES) -->
+<audio id="song" src="valentine.mp3" preload="auto"></audio>
 
 <script>
 const app=document.getElementById("app");
 const song=document.getElementById("song");
 
-let tries=0;
 let chaseStarted=false;
 let chaseMsgEl=null;
 
@@ -149,7 +146,6 @@ function openLetter(){
 }
 
 function secret(){
-  song.play();
   app.innerHTML=`
     <p>There’s a secret…</p>
     <button onclick="love()">Go to next page</button>
@@ -194,7 +190,6 @@ function finalPrep(){
 }
 
 function valentine(){
-  tries=0;
   chaseStarted=false;
   if(chaseMsgEl){chaseMsgEl.remove();chaseMsgEl=null;}
 
@@ -209,7 +204,7 @@ function valentine(){
   enableChase(document.getElementById("maybeBtn"));
 }
 
-/* CHASE LOGIC */
+/* Chase */
 
 function enableChase(btn){
   btn.addEventListener("touchstart",(e)=>{e.preventDefault();run(btn)},{passive:false});
@@ -217,18 +212,15 @@ function enableChase(btn){
 }
 
 function run(btn){
-  tries++;
-
   const x=(Math.random()*300-150);
   const y=(Math.random()*200-100);
 
-  btn.style.transition="transform .15s ease-out";
   btn.style.transform=`translate(${x}px,${y}px) scale(1.05)`;
 
-  const rect=btn.getBoundingClientRect();
+  const r=btn.getBoundingClientRect();
 
-  spawnBurstHearts(rect.left+rect.width/2,rect.top+rect.height/2);
-  spawnTrailHeart(rect.left+rect.width/2,rect.top+rect.height/2);
+  spawnBurstHearts(r.left+r.width/2,r.top+r.height/2);
+  spawnTrailHeart(r.left+r.width/2,r.top+r.height/2);
 
   if(!chaseStarted){
     chaseStarted=true;
@@ -236,8 +228,8 @@ function run(btn){
   }
 
   if(chaseMsgEl){
-    chaseMsgEl.style.left=rect.left+rect.width/2+"px";
-    chaseMsgEl.style.top=rect.top+rect.height+18+"px";
+    chaseMsgEl.style.left=r.left+r.width/2+"px";
+    chaseMsgEl.style.top=r.top+r.height+18+"px";
   }
 }
 
@@ -248,15 +240,14 @@ function startChaseMessages(){
   chaseMsgEl.style.color="#7a1632";
   chaseMsgEl.style.fontSize="16px";
   chaseMsgEl.style.pointerEvents="none";
-  chaseMsgEl.style.opacity="0";
   document.body.appendChild(chaseMsgEl);
 
-  setTimeout(()=>{chaseMsgEl.innerText="You’re that adamant huh bodmosh 😏";chaseMsgEl.style.opacity=1},2000);
-  setTimeout(()=>{chaseMsgEl.innerText="You ain’t catching it 😌"},5000);
-  setTimeout(()=>{chaseMsgEl.innerText="You know the correct answer ❤️"},8000);
+  setTimeout(()=>chaseMsgEl.innerText="You’re that adamant huh bodmosh 😏",2000);
+  setTimeout(()=>chaseMsgEl.innerText="You ain’t catching it 😌",5000);
+  setTimeout(()=>chaseMsgEl.innerText="You know the correct answer ❤️",8000);
 }
 
-/* HEART EFFECTS */
+/* Hearts */
 
 function spawnBurstHearts(x,y){
   for(let i=0;i<6;i++){
@@ -280,13 +271,13 @@ function spawnTrailHeart(x,y){
   setTimeout(()=>h.remove(),800);
 }
 
-/* YES */
+/* YES — music + image ONLY here */
 
 function yes(){
-  if(chaseMsgEl){
-    chaseMsgEl.remove();
-    chaseMsgEl=null;
-  }
+  if(chaseMsgEl){chaseMsgEl.remove();chaseMsgEl=null;}
+
+  song.currentTime=0;
+  song.play().catch(()=>{});
 
   app.innerHTML=`
     <h1>That’s right 😌</h1>
