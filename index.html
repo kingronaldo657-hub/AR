@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>For You ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Playfair Display',serif;
+  background:linear-gradient(135deg,#ffd6e8,#ffe9f2);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+
+/* Floating background hearts */
+.bg-heart{
+  position:fixed;
+  font-size:18px;
+  color:#ff6b9d;
+  opacity:.4;
+  animation:float 10s linear infinite;
+}
+@keyframes float{
+  from{transform:translateY(110vh)}
+  to{transform:translateY(-10vh)}
+}
+
+/* Card */
+.card{
+  width:90%;
+  max-width:380px;
+  background:rgba(255,255,255,.92);
+  border-radius:22px;
+  padding:30px 24px;
+  text-align:center;
+  box-shadow:0 25px 50px rgba(0,0,0,.15);
+  animation:flip .8s ease;
+}
+@keyframes flip{
+  from{transform:rotateY(90deg);opacity:0}
+  to{transform:rotateY(0);opacity:1}
+}
+
+h1{color:#c9184a;font-size:26px;margin-bottom:14px}
+p{color:#7a1632;font-size:18px;line-height:1.5}
+
+button{
+  margin-top:14px;
+  padding:12px 24px;
+  font-size:16px;
+  border:none;
+  border-radius:30px;
+  background:linear-gradient(135deg,#ff5c8a,#ff8fab);
+  color:white;
+  cursor:pointer;
+  transition:.3s;
+}
+button:hover{transform:scale(1.05)}
+
+.options button{
+  width:100%;
+  margin:10px 0;
+}
+
+/* Kiss animation */
+.kiss-wrap{height:70px;position:relative}
+.kiss{
+  position:absolute;
+  font-size:32px;
+  animation:kiss 2s ease forwards;
+}
+.kiss.left{left:25%}
+.kiss.right{right:25%}
+@keyframes kiss{
+  0%{opacity:0;transform:scale(.6)}
+  40%{opacity:1}
+  80%{transform:translateX(40px)}
+  100%{opacity:0}
+}
+
+/* Heart particles */
+.heart-particle{
+  position:fixed;
+  font-size:14px;
+  color:#ff6b9d;
+  pointer-events:none;
+  animation:heartPop 1s ease-out forwards;
+}
+@keyframes heartPop{
+  from{transform:scale(.6);opacity:1}
+  to{transform:translateY(-30px) scale(1.4);opacity:0}
+}
+
+.heart-trail{
+  position:fixed;
+  font-size:12px;
+  color:#ff8fab;
+  pointer-events:none;
+  opacity:.7;
+  animation:trailFade .8s linear forwards;
+}
+@keyframes trailFade{
+  to{opacity:0;transform:scale(.8)}
+}
+</style>
+</head>
+
+<body>
+
+<script>
+for(let i=0;i<18;i++){
+  const h=document.createElement("div");
+  h.className="bg-heart";
+  h.innerText="❤️";
+  h.style.left=Math.random()*100+"%";
+  h.style.animationDuration=7+Math.random()*8+"s";
+  document.body.appendChild(h);
+}
+</script>
+
+<div id="app" class="card"></div>
+
+<audio id="song" src="valentine.mp3"></audio>
+
+<script>
+const app=document.getElementById("app");
+const song=document.getElementById("song");
+
+let tries=0;
+let chaseStarted=false;
+let chaseMsgEl=null;
+
+/* FLOW */
+
+function openLetter(){
+  app.innerHTML=`
+    <h1>Open the letter 💌</h1>
+    <p>There’s something inside for you…</p>
+    <button onclick="secret()">Tap to open</button>
+  `;
+}
+
+function secret(){
+  song.play();
+  app.innerHTML=`
+    <p>There’s a secret…</p>
+    <button onclick="love()">Go to next page</button>
+  `;
+}
+
+function love(){
+  app.innerHTML=`
+    <h1>I loveee you sooo muchhhhh babuuu 💗</h1>
+    <button onclick="favQ()">Next</button>
+  `;
+}
+
+function favQ(){
+  app.innerHTML=`
+    <p><b>What do you think is my favorite thing in the world?</b></p>
+    <div class="options">
+      <button onclick="fav()">Gym</button>
+      <button onclick="fav()">Biriyani</button>
+      <button onclick="fav()">Sports</button>
+      <button onclick="fav()">Gaming</button>
+    </div>
+  `;
+}
+
+function fav(){
+  app.innerHTML=`
+    <h1>You’re my favorite 😘</h1>
+    <div class="kiss-wrap">
+      <div class="kiss left">💋</div>
+      <div class="kiss right">💋</div>
+    </div>
+    <button onclick="finalPrep()">Next</button>
+  `;
+}
+
+function finalPrep(){
+  app.innerHTML=`
+    <p>Acha… one final question ❤️</p>
+    <button onclick="valentine()">Okay</button>
+  `;
+}
+
+function valentine(){
+  tries=0;
+  chaseStarted=false;
+  if(chaseMsgEl){chaseMsgEl.remove();chaseMsgEl=null;}
+
+  app.innerHTML=`
+    <h1 style="color:#b5173f">Will you be my Valentine? 💘</h1>
+    <button onclick="yes()">Yes</button>
+    <button id="noBtn">No</button>
+    <button id="maybeBtn">Maybe</button>
+  `;
+
+  enableChase(document.getElementById("noBtn"));
+  enableChase(document.getElementById("maybeBtn"));
+}
+
+/* CHASE LOGIC */
+
+function enableChase(btn){
+  btn.addEventListener("touchstart",(e)=>{e.preventDefault();run(btn)},{passive:false});
+  btn.addEventListener("mouseenter",()=>run(btn));
+}
+
+function run(btn){
+  tries++;
+
+  const x=(Math.random()*300-150);
+  const y=(Math.random()*200-100);
+
+  btn.style.transition="transform .15s ease-out";
+  btn.style.transform=`translate(${x}px,${y}px) scale(1.05)`;
+
+  const rect=btn.getBoundingClientRect();
+
+  spawnBurstHearts(rect.left+rect.width/2,rect.top+rect.height/2);
+  spawnTrailHeart(rect.left+rect.width/2,rect.top+rect.height/2);
+
+  if(!chaseStarted){
+    chaseStarted=true;
+    startChaseMessages();
+  }
+
+  if(chaseMsgEl){
+    chaseMsgEl.style.left=rect.left+rect.width/2+"px";
+    chaseMsgEl.style.top=rect.top+rect.height+18+"px";
+  }
+}
+
+function startChaseMessages(){
+  chaseMsgEl=document.createElement("div");
+  chaseMsgEl.style.position="fixed";
+  chaseMsgEl.style.transform="translateX(-50%)";
+  chaseMsgEl.style.color="#7a1632";
+  chaseMsgEl.style.fontSize="16px";
+  chaseMsgEl.style.pointerEvents="none";
+  chaseMsgEl.style.opacity="0";
+  document.body.appendChild(chaseMsgEl);
+
+  setTimeout(()=>{chaseMsgEl.innerText="You’re that adamant huh bodmosh 😏";chaseMsgEl.style.opacity=1},2000);
+  setTimeout(()=>{chaseMsgEl.innerText="You ain’t catching it 😌"},5000);
+  setTimeout(()=>{chaseMsgEl.innerText="You know the correct answer ❤️"},8000);
+}
+
+/* HEART EFFECTS */
+
+function spawnBurstHearts(x,y){
+  for(let i=0;i<6;i++){
+    const h=document.createElement("div");
+    h.className="heart-particle";
+    h.innerText="❤️";
+    h.style.left=(x+Math.random()*30-15)+"px";
+    h.style.top=(y+Math.random()*30-15)+"px";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),1000);
+  }
+}
+
+function spawnTrailHeart(x,y){
+  const h=document.createElement("div");
+  h.className="heart-trail";
+  h.innerText="💖";
+  h.style.left=x+"px";
+  h.style.top=y+"px";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),800);
+}
+
+/* YES */
+
+function yes(){
+  if(chaseMsgEl){
+    chaseMsgEl.remove();
+    chaseMsgEl=null;
+  }
+
+  app.innerHTML=`
+    <h1>That’s right 😌</h1>
+    <p>You’re stuck with me.<br><b>My forever Valentine ❤️</b></p>
+    <img src="proposal.jpg" style="width:100%;border-radius:16px;margin-top:16px">
+  `;
+}
+
+openLetter();
+</script>
+
+</body>
+</html>
